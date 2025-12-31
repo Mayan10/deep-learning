@@ -4,7 +4,7 @@ from torchvision import datasets, transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 device = torch.device("mps")
 
@@ -70,3 +70,30 @@ net = Net()
 
 loss_function = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=1e-3)
+
+for epoch in range(30):
+    for data in trainset:
+        X,y = data
+        net.zero_grad()
+        output = net(X.view(-1, 784))
+        loss = F.nll_loss(output, y)
+        loss.backward()
+        optimizer.step()
+    print(loss)
+
+correct = 0
+total = 0
+
+with torch.no_grad():
+    for data in testset:
+        X, y = data
+        output = net(X.view(-1, 784))
+        for idx, i in enumerate(output):
+            if torch.argmax(i) == y[idx]:
+                correct+=1
+            total += 1
+print("Accuracy: ", round(correct/total, 3))
+
+plt.imshow(X[0].view(28, 28))
+plt.show()
+print(torch.argmax(net(X[0].view(-1, 784))))
