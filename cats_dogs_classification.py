@@ -8,6 +8,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import time
+from matplotlib import style
+
+style.use("ggplot")
 
 device = torch.device("mps")
 REBUILD_DATA = False
@@ -148,9 +151,9 @@ def train(net):
                 # print(f"Acc: {round(float(acc),2)}  Loss: {round(float(loss),4)}")
                 f.write(f"{MODEL_NAME}, {round(time.time(), 3)}, in_sample, {round(float(acc), 2)}, {round(float(loss), 4)}\n")
 
-                if i == 5:
-                    break
-                break
+                # if i == 5:
+                #     break
+                # break
 
 train(net)
 
@@ -189,3 +192,33 @@ def test_batch(net):
         print("Test Accuracy: ", round(acc, 3))
 
 test_batch(net)
+
+model_name = "model-1767253013"
+
+def create_acc_loss_graph(model_name):
+    contents = open("model.log", "r").read().split("\n")
+
+    times = []
+    accuracies = []
+    losses = []
+
+    for c in contents:
+        if model_name in c:
+            name, timestamp, sample_type, acc, loss = c.split(",")
+
+            times.append(timestamp)
+            accuracies.append(acc)
+            losses.append(loss)
+
+    fig = plt.figure()
+
+    ax1 = plt.subplot2grid((2,1), (0,0))
+    ax2 = plt.subplot2grid((2,1), (1,0), sharex=ax1)
+
+    ax1.plot(times, accuracies, label="in_sample_acc")
+    ax1.legend(loc=2)
+    ax2.plot(times,losses, label="in_samp_loss")
+    ax2.legend(loc=2)
+    plt.show()
+
+create_acc_loss_graph(model_name)
